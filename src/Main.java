@@ -19,8 +19,10 @@ public class Main {
             BufferedReader reader = new BufferedReader(isr);
             StringBuilder json = new StringBuilder();
             int c;
-            while ((c = reader.read()) != -1) {
+            int i = 0;
+            while ((c = reader.read()) != -1 && i<500) {
                 json.append((char) c);
+                i++; //download only first 500 characters, after this we know if is empty or not
             }
             return json.toString();
         } catch (IOException e) {
@@ -33,24 +35,24 @@ public class Main {
 
 
         String jsonFile; //String for JSON File
-        String jsonFilePart; //String for first part of JSON file which is using for check
 
         for (int i = 0; i < countryTable.length; i++) {
             if (Objects.equals(typeVideo, "M")) {
                 URL jsonAddress = new URL("https://disney.content.edge.bamgrid.com/svc/content/DmcVideoBundle/version/5.1/region/" + countryTable[i]
                         + "/audience/k-false,l-true/maturity/1850/language/pl/encodedFamilyId/" + dmcCode);
                 jsonFile = downloadJSON(jsonAddress);
-                jsonFilePart = jsonFile.substring(0, 231); //231 is length of empty JSON about movie
-                //check if JSON isn't empty
-                if (!Objects.equals(jsonFilePart, "{\"data\":{\"DmcVideoBundle\":{\"containers\":[],\"extras\":{\"meta\":{\"hits\":0,\"offset\":0,\"page_size\":50},\"videos\":[]},\"promoLabels\":null,\"related\":{\"experimentToken\":\"\",\"items\":[],\"meta\":{\"hits\":0,\"offset\":0,\"page_size\":8}},\"video\":null}}}")) {
-                    System.out.println(countryTable[i]); //if JSON doesn't empty, movie is avaiable in this country, app print code of country
+                 //231 is length of empty JSON about movie
+                if (jsonFile.length() > 300)// long JSON = not empty = movie is available
+                {
+                    System.out.println(countryTable[i]);
                 }
             } else {
                 URL jsonAddress = new URL("https://disney.content.edge.bamgrid.com/svc/content/DmcSeriesBundle/version/5.1/region/" + countryTable[i]
                         + "/audience/k-false,l-true/maturity/1850/language/pl/encodedSeriesId/" + dmcCode);
                 jsonFile = downloadJSON(jsonAddress);
-                jsonFilePart = jsonFile.substring(0, 372); //372 is length of empty JSON about series
-                if (!Objects.equals(jsonFilePart, "{\"data\":{\"DmcSeriesBundle\":{\"containers\":[],\"episodes\":{\"meta\":{\"hits\":0,\"offset\":0,\"page_size\":15},\"videos\":[]},\"extras\":{\"meta\":{\"hits\":0,\"offset\":0,\"page_size\":80},\"videos\":[]},\"promoLabels\":null,\"related\":{\"experimentToken\":\"\",\"items\":[],\"meta\":{\"hits\":0,\"offset\":0,\"page_size\":8}},\"seasons\":{\"meta\":{\"hits\":0,\"offset\":0,\"page_size\":100},\"seasons\":[]},\"series\":null}}}")) {
+                //372 is length of empty JSON about series
+                if (jsonFile.length() > 400)// long JSON = not empty = series is available
+                {
                     System.out.println(countryTable[i]);
                 }
             }
@@ -65,7 +67,7 @@ public class Main {
         System.out.println("Series (S) or Movie (M)?"); //question about type of video
         String typeVideo = scan.nextLine();
         if (Objects.equals(typeVideo, "S") || Objects.equals(typeVideo, "M")) {
-            System.out.println("What DmcCode"); //question about video code from Disney+
+            System.out.println("What DmcCode?"); //question about video code from Disney+
             String dmcCode = scan.nextLine();
 
             checkJSON(typeVideo, dmcCode);
